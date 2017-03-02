@@ -1,0 +1,7 @@
+dist
+node_modules
+.c9
+coverage
+html-results
+dist.zip
+docs

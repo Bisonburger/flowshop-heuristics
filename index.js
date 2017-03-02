@@ -32,5 +32,3 @@ for(var trial = 1; trial <= MAX_TRIALS; trial++) {
     }
 }
 console.log(`\nBest order was ${best.order} with a makespan of ${best.makespan} obtained on trial #${best.trial}\n`);
-
-console.log( FlowShop.buildSchedule(best.order, SCHEDULE) );

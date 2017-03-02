@@ -68,11 +68,4 @@ Flowshop.prototype.createRandomOrder = function(JOBS) {
     return rand;
 };
 
-Flowshop.prototype.buildSchedule = function(order,plan){
-    var schedule = order.map( (idx) => plan[0][idx] ).map( (runTime,i) => schedule[i] = (i === 0)? schedule[0] : schedule[i-1]+schedule[i]  );
-    
-    
-    return schedule;
-};
-
 module.exports = Flowshop;
