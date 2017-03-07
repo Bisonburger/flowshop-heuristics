@@ -20,7 +20,7 @@ var Flowshop = function Flowshop() {
  * @return {Number} makespan of the schedule given the order of jobs
  */
 Flowshop.prototype.makespan = function(order,SCHEDULE) {
-    var job, mcn, JOBS = SCHEDULE[0].length, MACHINES = SCHEDULE.length;
+    var job, mcn, JOBS = order.length, MACHINES = SCHEDULE.length;
 
     var finishTimes = [];
     for (job = 0; job < JOBS; job++) {
