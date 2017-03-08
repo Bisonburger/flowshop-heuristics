@@ -5,21 +5,18 @@
  * @license ISC
  */
  
-//const events = require('events');
-
 /**
  * construct an EigenAnt setup
  */
-var EigenAnt = function(pathLengths, alpha, beta) {
-    //this.eventEmitter = new events.EventEmitter(); 
-    this.paths = pathLengths.length,
-        this.path = pathLengths,
-        this.totalTrips = [],
-        this.pheromoneConcentration = [],
-        this.pathProb = [],
-        this.d = [],
-        this.alpha = (alpha || 0.5),
-        this.beta = (beta || 1);
+var EigenAnt = function( options ) {
+    
+    this.path = options? options.pathLengths : [],
+    this.totalTrips = [],
+    this.pheromoneConcentration = [],
+    this.pathProb = [],
+    this.d = [],
+    this.alpha = (options && options.alpha) || 0.5,
+    this.beta = (options && options.beta) || 1;
 
     this.initialize();
 
@@ -27,35 +24,25 @@ var EigenAnt = function(pathLengths, alpha, beta) {
      * sum the pheromone concentrations
      */
     this.sumConcentration = function() {
-        return this.pheromoneConcentration.reduce(function(a, v) {
-            return a + v;
-        }, 0);
+        return this.pheromoneConcentration.reduce( (a, v) => a + v, 0);
     };
 
     /**
      * sum the total trips taken
      */
     this.sumTotalTrips = function() {
-        return this.totalTrips.reduce(function(ac, v) {
-            return ac + v;
-        }, 0);
+        return this.totalTrips.reduce((ac, v) => ac + v, 0);
     };
 
     /**
      * probabalisitically select a path
      */
     this.selectPath = function() {
-        var me = this;
-        var cpf = this.pathProb.map(function(path, i) {
-            return me.pathProb.slice(0, i + 1).reduce(function(a, v) {
-                return a + v;
-            }, 0);
-        });
+        var me = this; // preserve this...
+        var cdf = this.pathProb.map( (path, i) => me.pathProb.slice(0, i + 1).reduce( (a, v) => a + v, 0) );
 
         var p = Math.random();
-        return cpf.findIndex(function(prob) {
-            return p < prob;
-        });
+        return cdf.findIndex((prob) => p < prob );
     };
 };
 
@@ -63,57 +50,38 @@ var EigenAnt = function(pathLengths, alpha, beta) {
  * initialize the EginAnt setup
  */
 EigenAnt.prototype.initialize = function() {
-    for (var i = 0; i < this.paths; i++) {
+    for (var i = 0; i < this.path.length; i++) {
         this.totalTrips[i] = 0;
-        this.pheromoneConcentration[i] = (1 / this.paths);
-        this.pathProb[i] = (1 / this.paths);
+        this.pheromoneConcentration[i] = (1 / this.path.length);
+        this.pathProb[i] = (1 / this.path.length);
         this.d[i] = (1 / this.path[i]);
     }
 };
 
 
 
-/*
-EigenAnt.prototype.replaceWorst = function(initialConcentration) {
-    // replace the worst one with a random path
-    var worst = this.pathProb.reduce(function(a, v) {
-        return Math.min(a, v);
-    }, Infinity);
-    var idx = this.pathProb.findIndex(function(f) {
-        return f === worst;
-    });
-    this.path[idx] = this.fnNewLength();
-    this.pheromoneConcentration[idx] = initialConcentration;
-};
-*/
-
 /**
- * run a set of walks for the EginAnt setup
+ * run a set of walks for the EigenAnt setup
  */
-EigenAnt.prototype.run = function(max) {
+EigenAnt.prototype.run = function(max,mutatePaths) {
     if (!max) max = 100;
     while (this.sumTotalTrips() < max) {
         var selected = this.selectPath();
         if (selected === -1) break; // handle errors with generating random #
         this.totalTrips[selected] += 1;
-        if (isNaN(this.pheromoneConcentration[selected])) break; // handle underrun errors
+        if (isNaN(this.pheromoneConcentration[selected])) break; // handle over/under-run errors
         this.pheromoneConcentration[selected] = (1 - this.alpha) * this.pheromoneConcentration[selected] + (this.beta * this.d[selected] * this.pathProb[selected]);
 
-        // TODO emit an event here...
-        //this.eventEmitter.emit( 'ant-walk', this.pathProb );
-
-        //replaceWorst(sumConcentration() / paths);
-
-        for (var i = 0; i < this.paths; i++) {
+        if( mutatePaths )
+            this.path = mutatePaths( this.pathProb, this.path, this.pheromoneConcentration, this.sumTotalTrips() );
+    
+        for (var i = 0; i < this.path.length; i++) {
+            if( !this.pheromoneConcentration[i] ) this.pheromoneConcentration[i] = 1 / this.path.length;
             this.pathProb[i] = this.pheromoneConcentration[i] / this.sumConcentration();
         }
     }
-    var smallest = this.pathProb.reduce(function(a, v) {
-        return Math.max(a, v);
-    }, -Infinity);
-    return this.pathProb.findIndex(function(f) {
-        return f === smallest;
-    });
+    var smallest = this.pathProb.reduce((a, v) => Math.max(a, v), -Infinity);
+    return this.pathProb.findIndex((f) => f === smallest);
 };
 
 module.exports = EigenAnt;

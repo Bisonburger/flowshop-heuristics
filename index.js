@@ -12,7 +12,23 @@ var FlowShop = new (require("./flowshop.js"))(),
     SCHEDULE = Taillard.t02,
     JOBS = SCHEDULE[0].length;
 
+// Initialize a set of random ant paths
 for (var i = 0; i < OPTIONS; jobOrder[i++] = FlowShop.createRandomOrder(JOBS) );
+
+
+// define a mutate function that will replace the 'worst' path every 5 trials
+var replaceWorst = function(pathProb,path,pheromoneConcentration,tripIdx) {
+    if( tripIdx % 5 === 0 ){
+        // replace the worst one with a random path
+        var worst = pathProb.reduce( (a, v) => Math.min(a, v), Infinity);
+        var idx = pathProb.findIndex( (f) => f === worst );
+        jobOrder[idx] = FlowShop.createRandomOrder(JOBS);
+        path[idx] = FlowShop.makespan(jobOrder[idx],SCHEDULE);
+        pheromoneConcentration[idx] = 1 / JOBS;
+    }
+    return path;
+};
+
 
 var MAX_TRIALS = 30,
     best = { 
@@ -20,11 +36,14 @@ var MAX_TRIALS = 30,
         trial: 0,
         order: []
     },
-    eAnt = new EigenAnt(jobOrder.map(function(p) {return FlowShop.makespan(p,SCHEDULE);}));
+    eAntOptions = { 
+        pathLengths: jobOrder.map( (p) => FlowShop.makespan(p,SCHEDULE) ) 
+    },
+    eAnt = new EigenAnt( eAntOptions );
 
 for(var trial = 1; trial <= MAX_TRIALS; trial++) {
     eAnt.initialize();
-    var bestIdx = eAnt.run(200);
+    var bestIdx = eAnt.run(200,replaceWorst);
     if (FlowShop.makespan(jobOrder[bestIdx],SCHEDULE) < best.makespan) {
         best.makespan = FlowShop.makespan(jobOrder[bestIdx],SCHEDULE);
         best.trial = trial;
