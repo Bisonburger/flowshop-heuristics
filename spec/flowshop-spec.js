@@ -8,65 +8,61 @@ var Flowshop = new (require('../flowshop.js'))(),
     JOBS;
 /* global expect */
 
-describe('flowshop', function() {
+describe('flowshop', () => {
     
-    describe( '#createRandomOrder', function(){
+    describe( '#createRandomOrder', () => {
 
-        describe( 'for 2 jobs', function(){
+        describe( 'for 2 jobs', () => {
             JOBS = 2;
-            it( 'should create an array of length 2', function(){
-                expect(Flowshop.createRandomOrder(JOBS).length).toEqual(JOBS);    
-            });  
+            it( 'should create an array of length 2', () => expect(Flowshop.createRandomOrder(JOBS).length).toEqual(JOBS) );  
         });
 
-        describe( 'for 0 jobs', function(){
+        describe( 'for 0 jobs', () => {
             JOBS = 0;
-            it( 'should create an empty array', function(){
-                expect(Flowshop.createRandomOrder(JOBS).length).toEqual(0);    
-            });  
+            it( 'should create an empty array', () => expect(Flowshop.createRandomOrder(JOBS).length).toEqual(0) );  
         });
     });
     
-    describe( '#makespan', function(){ 
+    describe( '#makespan', () => { 
         
-        describe('for empty ordering', function(){
-            it( 'should return 0', function(){
+        describe('for empty ordering', () => {
+            it( 'should return 0', () => {
                 var mksp = Flowshop.makespan([], [ [1, 1], [2,2] ]);
                 expect( mksp ).toEqual(0);
             });                
         });
 
-        describe('for undefined ordering', function(){
-            it( 'should return 0', function(){
+        describe('for undefined ordering', () => {
+            it( 'should return 0', () => {
                 var mksp = Flowshop.makespan(undefined, [ [1, 1], [2,2] ]);
                 expect( mksp ).toEqual(0);
             });                
         });
 
-        describe('for empty schedule', function(){
-            it( 'should return 0', function(){
+        describe('for empty schedule', () => {
+            it( 'should return 0', () => {
                 var mksp = Flowshop.makespan([0,1], [] );
                 expect( mksp ).toEqual(0);
             });                
         });
 
-        describe('for undefined schedule', function(){
-            it( 'should return 0', function(){
+        describe('for undefined schedule', () => {
+            it( 'should return 0', () => {
                 var mksp = Flowshop.makespan([0,1], undefined );
                 expect( mksp ).toEqual(0);
             });                
         });
 
         
-        describe('for simple schedule', function(){
-            it( 'should calculate a makespan', function(){
+        describe('for simple schedule', () => {
+            it( 'should calculate a makespan', () => {
                 var mksp = Flowshop.makespan( [0,1], [ [1, 1], [2, 2]] );    
                 expect( mksp ).toEqual(5);
             });
         } );
 
-        describe('for partial order', function(){
-            it( 'should calculate a makespan', function(){
+        describe('for partial order', () => {
+            it( 'should calculate a makespan', () => {
                 var mksp = Flowshop.makespan( [2,0], [ [1, 1, 2], [1, 2, 3]] );    
                 expect( mksp ).toEqual(6);
             });
